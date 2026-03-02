@@ -29,6 +29,20 @@
 
 @section('content')
 
+    {{-- Search bar --}}
+    <div class="mb-4">
+        <div class="relative">
+            <svg class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+            </svg>
+            <input type="text"
+                   id="search-menu"
+                   placeholder="Cari menu..."
+                   class="w-full pl-10 pr-4 py-2.5 text-sm border border-gray-200 rounded-lg
+                          focus:outline-none focus:border-sky-400 focus:ring-1 focus:ring-sky-100">
+        </div>
+    </div>
+
     {{-- Filter cepat --}}
     <div class="flex flex-wrap gap-2 mb-5">
         <button onclick="filterStok('semua')"
@@ -52,85 +66,102 @@
     </div>
 
     {{-- Daftar menu per kategori --}}
-    <div class="space-y-5" id="wrapper-kategori">
+    <div class="space-y-6" id="wrapper-kategori">
 
         @forelse($kategoris as $kategori)
             @if($kategori->menus->count() > 0)
 
-                <div class="bg-white rounded-xl border border-gray-200 overflow-hidden kategori-section"
-                     data-kategori="{{ $kategori->id }}">
-
-                    <div class="px-5 py-3 bg-gray-50 border-b border-gray-100 flex items-center justify-between">
-                        <h3 class="font-semibold text-gray-700 text-sm">{{ $kategori->nama }}</h3>
+                {{-- Header kategori --}}
+                <div class="kategori-section" data-kategori="{{ $kategori->id }}">
+                    <div class="flex items-center gap-3 mb-3">
+                        <h3 class="font-semibold text-gray-800">{{ $kategori->nama }}</h3>
                         <span class="text-xs text-gray-400">{{ $kategori->menus->count() }} item</span>
                     </div>
 
-                    <div class="divide-y divide-gray-50">
+                    {{-- Grid card menu --}}
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                         @foreach($kategori->menus as $menu)
-                            <div class="menu-row flex items-center gap-4 px-5 py-4"
+                            <div class="menu-card bg-white rounded-xl border border-gray-200 overflow-hidden
+                                        hover:shadow-md hover:border-gray-300 transition-all"
                                  data-id="{{ $menu->id }}"
                                  data-stok="{{ $menu->stok }}"
                                  data-nama="{{ $menu->nama }}">
 
-                                <div class="flex-shrink-0">
+                                {{-- Gambar & Badge Stok --}}
+                                <div class="relative h-36 bg-gray-100">
                                     <img src="{{ $menu->gambar_url }}"
                                          alt="{{ $menu->nama }}"
-                                         class="w-11 h-11 rounded-lg object-cover border border-gray-100">
-                                </div>
-
-                                <div class="flex-1 min-w-0">
-                                    <p class="text-sm font-medium text-gray-800 truncate">{{ $menu->nama }}</p>
-                                    <p class="text-xs text-gray-400">{{ $menu->harga_format }}</p>
-                                </div>
-
-                                <div class="flex-shrink-0 text-center min-w-[72px]">
-                                    <p class="text-xs text-gray-400 mb-0.5">Stok</p>
-                                    @include('stok._badge_stok', ['stok' => $menu->stok, 'menuId' => $menu->id])
-                                </div>
-
-                                <div class="flex-shrink-0 flex items-center gap-2">
-                                    <div class="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-                                        <button type="button"
-                                                onclick="ubahInput({{ $menu->id }}, -1)"
-                                                class="px-2.5 py-2 text-gray-400 hover:bg-gray-50 hover:text-gray-600
-                                                       transition-colors text-base leading-none">
-                                            −
-                                        </button>
-                                        <input type="number"
-                                               id="input-stok-{{ $menu->id }}"
-                                               value="1"
-                                               min="1"
-                                               max="9999"
-                                               class="w-14 text-center text-sm border-x border-gray-200 py-2
-                                                      focus:outline-none focus:bg-sky-50">
-                                        <button type="button"
-                                                onclick="ubahInput({{ $menu->id }}, 1)"
-                                                class="px-2.5 py-2 text-gray-400 hover:bg-gray-50 hover:text-gray-600
-                                                       transition-colors text-base leading-none">
-                                            +
-                                        </button>
+                                         class="w-full h-full object-cover">
+                                    {{-- Badge stok overlay --}}
+                                    <div class="absolute top-2 right-2">
+                                        @if($menu->stok === 0)
+                                            <span class="px-2 py-1 text-xs font-bold bg-red-500 text-white rounded-full">
+                                                Habis
+                                            </span>
+                                        @elseif($menu->stok <= 5)
+                                            <span class="px-2 py-1 text-xs font-bold bg-yellow-500 text-white rounded-full">
+                                                {{ $menu->stok }}
+                                            </span>
+                                        @else
+                                            <span class="px-2 py-1 text-xs font-bold bg-green-500 text-white rounded-full">
+                                                {{ $menu->stok }}
+                                            </span>
+                                        @endif
                                     </div>
+                                </div>
 
-                                    <button type="button"
-                                            onclick="tambahStok({{ $menu->id }})"
-                                            id="btn-tambah-{{ $menu->id }}"
-                                            class="px-3 py-2 text-xs font-medium text-white bg-sky-500
-                                                   hover:bg-sky-600 rounded-lg transition-colors whitespace-nowrap">
-                                        + Tambah
-                                    </button>
+                                {{-- Info menu --}}
+                                <div class="p-3">
+                                    <h4 class="font-medium text-gray-800 text-sm truncate">{{ $menu->nama }}</h4>
+                                    <p class="text-xs text-gray-400 mt-0.5">{{ $menu->harga_format }}</p>
 
-                                    <button type="button"
-                                            onclick="bukaModalSet({{ $menu->id }}, '{{ addslashes($menu->nama) }}', {{ $menu->stok }})"
-                                            class="px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100
-                                                   hover:bg-gray-200 rounded-lg transition-colors whitespace-nowrap">
-                                        Set
-                                    </button>
+                                    {{-- Input dan tombol aksi --}}
+                                    <div class="mt-3 space-y-2">
+                                        {{-- Input jumlah --}}
+                                        <div class="flex items-center justify-center border border-gray-200 rounded-lg overflow-hidden">
+                                            <button type="button"
+                                                    onclick="ubahInput({{ $menu->id }}, -1)"
+                                                    class="px-3 py-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600
+                                                           transition-colors text-sm">
+                                                −
+                                            </button>
+                                            <input type="number"
+                                                   id="input-stok-{{ $menu->id }}"
+                                                   value="1"
+                                                   min="1"
+                                                   max="9999"
+                                                   class="w-16 text-center text-sm border-x border-gray-200 py-1.5
+                                                          focus:outline-none focus:bg-sky-50">
+                                            <button type="button"
+                                                    onclick="ubahInput({{ $menu->id }}, 1)"
+                                                    class="px-3 py-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600
+                                                           transition-colors text-sm">
+                                                +
+                                            </button>
+                                        </div>
+
+                                        {{-- Tombol aksi --}}
+                                        <div class="flex gap-2">
+                                            <button type="button"
+                                                    onclick="tambahStok({{ $menu->id }})"
+                                                    id="btn-tambah-{{ $menu->id }}"
+                                                    class="flex-1 px-3 py-2 text-xs font-medium text-white bg-sky-500
+                                                           hover:bg-sky-600 rounded-lg transition-colors">
+                                                + Tambah
+                                            </button>
+                                            <button type="button"
+                                                    onclick="bukaModalSet({{ $menu->id }}, '{{ addslashes($menu->nama) }}', {{ $menu->stok }})"
+                                                    class="flex-1 px-3 py-2 text-xs font-medium text-gray-600 bg-gray-100
+                                                           hover:bg-gray-200 rounded-lg transition-colors">
+                                                Set
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
 
                             </div>
                         @endforeach
                     </div>
-
                 </div>
 
             @endif
@@ -143,6 +174,14 @@
             </div>
         @endforelse
 
+    </div>
+
+    {{-- Pesan jika tidak ada hasil pencarian/filter --}}
+    <div id="no-results" class="hidden bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <svg class="w-12 h-12 text-gray-300 mx-auto mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-gray-400">Tidak ada menu yang ditemukan.</p>
     </div>
 
     {{-- ============================================
@@ -196,8 +235,17 @@
 <script>
     const csrfToken = document.querySelector('meta[name="csrf-token"]').content;
     let menuIdSet   = null;
+    let currentFilter = 'semua';
+    let searchQuery  = '';
+
+    // Fungsi search
+    document.getElementById('search-menu')?.addEventListener('input', function(e) {
+        searchQuery = e.target.value.toLowerCase();
+        applyFilters();
+    });
 
     function filterStok(tipe) {
+        currentFilter = tipe;
         document.querySelectorAll('.filter-stok-btn').forEach(btn => {
             btn.classList.remove('bg-sky-500', 'text-white', 'border-sky-500');
             btn.classList.add('border-gray-200', 'text-gray-600');
@@ -205,19 +253,45 @@
         document.getElementById('filter-' + tipe).classList.add('bg-sky-500', 'text-white', 'border-sky-500');
         document.getElementById('filter-' + tipe).classList.remove('border-gray-200', 'text-gray-600');
 
-        document.querySelectorAll('.menu-row').forEach(row => {
-            const stok = parseInt(row.dataset.stok);
-            let tampil = true;
-            if (tipe === 'habis') tampil = stok === 0;
-            if (tipe === 'tipis') tampil = stok > 0 && stok <= 5;
-            row.style.display = tampil ? '' : 'none';
+        applyFilters();
+    }
+
+    function applyFilters() {
+        const cards = document.querySelectorAll('.menu-card');
+        let visibleCount = 0;
+
+        cards.forEach(card => {
+            const stok = parseInt(card.dataset.stok);
+            const nama = card.dataset.nama.toLowerCase();
+
+            // Filter berdasarkan stok
+            let passFilter = true;
+            if (currentFilter === 'habis') passFilter = stok === 0;
+            if (currentFilter === 'tipis') passFilter = stok > 0 && stok <= 5;
+
+            // Filter berdasarkan search
+            let passSearch = true;
+            if (searchQuery) {
+                passSearch = nama.includes(searchQuery);
+            }
+
+            const shouldShow = passFilter && passSearch;
+            card.style.display = shouldShow ? '' : 'none';
+            if (shouldShow) visibleCount++;
         });
 
+        // Show/hide kategori sections dan no results
         document.querySelectorAll('.kategori-section').forEach(section => {
-            const adaYangTampil = [...section.querySelectorAll('.menu-row')]
-                .some(row => row.style.display !== 'none');
+            const adaYangTampil = [...section.querySelectorAll('.menu-card')]
+                .some(card => card.style.display !== 'none');
             section.style.display = adaYangTampil ? '' : 'none';
         });
+
+        // Show/hide no results message
+        const noResults = document.getElementById('no-results');
+        if (noResults) {
+            noResults.classList.toggle('hidden', visibleCount > 0);
+        }
     }
 
     function ubahInput(id, delta) {
@@ -303,30 +377,40 @@
     }
 
     function updateBadgeStok(id, stokBaru) {
-        const row = document.querySelector(`.menu-row[data-id="${id}"]`);
-        if (!row) return;
-        row.dataset.stok = stokBaru;
-        const badgeContainer = row.querySelector('.badge-stok-container');
-        if (badgeContainer) badgeContainer.innerHTML = renderBadge(stokBaru);
-    }
+        const card = document.querySelector(`.menu-card[data-id="${id}"]`);
+        if (!card) return;
+        card.dataset.stok = stokBaru;
 
-    function renderBadge(stok) {
-        if (stok === 0) {
-            return `<span class="badge-stok inline-flex items-center justify-center min-w-[52px] px-2.5 py-1
-                          rounded-full text-xs font-bold bg-red-100 text-red-700">Habis</span>`;
-        } else if (stok <= 5) {
-            return `<span class="badge-stok inline-flex items-center justify-center min-w-[52px] px-2.5 py-1
-                          rounded-full text-xs font-bold bg-yellow-100 text-yellow-700">${stok}</span>`;
+        // Update badge overlay pada gambar
+        const imgContainer = card.querySelector('.relative.h-36');
+        if (imgContainer) {
+            const existingBadge = imgContainer.querySelector('.absolute.top-2.right-2');
+            if (existingBadge) {
+                let badgeClass, badgeText;
+                if (stokBaru === 0) {
+                    badgeClass = 'bg-red-500';
+                    badgeText = 'Habis';
+                } else if (stokBaru <= 5) {
+                    badgeClass = 'bg-yellow-500';
+                    badgeText = stokBaru;
+                } else {
+                    badgeClass = 'bg-green-500';
+                    badgeText = stokBaru;
+                }
+                existingBadge.className = `absolute top-2 right-2`;
+                existingBadge.innerHTML = `<span class="px-2 py-1 text-xs font-bold ${badgeClass} text-white rounded-full">${badgeText}</span>`;
+            }
         }
-        return `<span class="badge-stok inline-flex items-center justify-center min-w-[52px] px-2.5 py-1
-                      rounded-full text-xs font-bold bg-green-100 text-green-700">${stok}</span>`;
+
+        // Re-apply filters setelah update stok
+        applyFilters();
     }
 
     function updateCounterRingkasan() {
-        const rows = document.querySelectorAll('.menu-row');
+        const cards = document.querySelectorAll('.menu-card');
         let habis = 0, tipis = 0;
-        rows.forEach(row => {
-            const stok = parseInt(row.dataset.stok);
+        cards.forEach(card => {
+            const stok = parseInt(card.dataset.stok);
             if (stok === 0) habis++;
             else if (stok <= 5) tipis++;
         });

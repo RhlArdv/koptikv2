@@ -36,10 +36,10 @@
     $chartData = collect(range(6, 0))->map(function ($daysAgo) {
         $date = now()->subDays($daysAgo);
         return [
-            'label'  => $date->isoFormat('ddd'),
-            'tanggal'=> $date->format('Y-m-d'),
-            'omzet'  => Pesanan::whereDate('created_at', $date)->where('status_pembayaran', 'lunas')->sum('total_harga'),
-            'count'  => Pesanan::whereDate('created_at', $date)->count(),
+            'label'   => $date->isoFormat('ddd'),
+            'tanggal' => $date->format('Y-m-d'),
+            'omzet'   => Pesanan::whereDate('created_at', $date)->where('status_pembayaran', 'lunas')->sum('total_harga'),
+            'count'   => Pesanan::whereDate('created_at', $date)->count(),
         ];
     });
 
@@ -61,8 +61,8 @@
     @if(auth()->user()->hasPermission('view_pesanan'))
     <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
         <div class="flex items-start justify-between mb-4">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center">
-                <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-xl bg-sky-50 flex items-center justify-center">
+                <svg class="w-5 h-5 text-sky-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                           d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                 </svg>
@@ -80,8 +80,8 @@
     @if(auth()->user()->hasPermission('konfirmasi_pembayaran') || auth()->user()->hasPermission('view_pesanan'))
     <div class="bg-white rounded-2xl border border-gray-100 p-5 shadow-sm hover:shadow-md transition-shadow">
         <div class="flex items-start justify-between mb-4">
-            <div class="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center">
-                <svg class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center">
+                <svg class="w-5 h-5 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8"
                           d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
                 </svg>
@@ -166,13 +166,9 @@
                 <h3 class="text-[15px] font-bold text-gray-900">Omzet 7 Hari Terakhir</h3>
                 <p class="text-xs text-gray-400 mt-0.5">Transaksi yang sudah lunas</p>
             </div>
-            {{-- <a href="{{ route('laporan.index') }}"
-               class="text-xs text-amber-600 hover:text-amber-700 font-semibold">
-                Lihat laporan →
-            </a> --}}
         </div>
 
-        {{-- Bar chart manual dengan CSS --}}
+        {{-- Bar chart --}}
         <div class="flex items-end justify-between gap-2 h-36">
             @php $maxOmzet = $chartData->max('omzet') ?: 1; @endphp
             @foreach($chartData as $day)
@@ -183,7 +179,7 @@
                 <div class="flex-1 flex flex-col items-center gap-1.5">
                     <div class="w-full flex items-end justify-center" style="height: 112px">
                         <div class="w-full rounded-t-lg transition-all duration-500 relative group cursor-pointer
-                                    {{ $isToday ? 'bg-amber-500' : 'bg-gray-100 hover:bg-amber-200' }}"
+                                    {{ $isToday ? 'bg-sky-500' : 'bg-sky-100 hover:bg-sky-200' }}"
                              style="height: {{ max($height, 4) }}%">
                             {{-- Tooltip --}}
                             <div class="hidden group-hover:flex absolute -top-8 left-1/2 -translate-x-1/2
@@ -193,7 +189,7 @@
                             </div>
                         </div>
                     </div>
-                    <p class="text-[11px] {{ $isToday ? 'font-bold text-amber-600' : 'text-gray-400' }}">
+                    <p class="text-[11px] {{ $isToday ? 'font-bold text-sky-600' : 'text-gray-400' }}">
                         {{ $day['label'] }}
                     </p>
                 </div>
@@ -230,7 +226,7 @@
         <div class="flex items-center justify-between mb-4">
             <h3 class="text-[15px] font-bold text-gray-900">Stok Kritis</h3>
             <a href="{{ route('stok.index') }}"
-               class="text-xs text-amber-600 hover:text-amber-700 font-semibold">
+               class="text-xs text-sky-600 hover:text-sky-700 font-semibold">
                 Kelola →
             </a>
         </div>
@@ -279,7 +275,7 @@
     <div class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
         <h3 class="text-[15px] font-bold text-gray-900">Pesanan Terbaru Hari Ini</h3>
         <a href="{{ route('pesanan.index') }}"
-           class="text-xs text-amber-600 hover:text-amber-700 font-semibold">
+           class="text-xs text-sky-600 hover:text-sky-700 font-semibold">
             Lihat semua →
         </a>
     </div>
@@ -300,7 +296,7 @@
                 </thead>
                 <tbody class="divide-y divide-gray-50">
                     @foreach($pesananTerbaru as $p)
-                        <tr class="hover:bg-gray-50/50 transition-colors">
+                        <tr class="hover:bg-sky-50/40 transition-colors">
                             <td class="px-5 py-3.5">
                                 <span class="font-mono text-xs font-semibold text-gray-600">{{ $p->kode_pesanan }}</span>
                             </td>

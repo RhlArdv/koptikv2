@@ -2,10 +2,7 @@
 
 namespace App\Models;
 
-use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Role extends Model
 {
@@ -16,30 +13,26 @@ class Role extends Model
     ];
 
     /**
-     * Permissions yang dimiliki role ini.
-     * Diakses via: $role->permissions
+     * Role punya banyak permission (many-to-many)
      */
-    public function permissions(): BelongsToMany
+    public function permissions()
     {
         return $this->belongsToMany(Permission::class, 'role_permission');
     }
 
     /**
-     * Users yang memiliki role ini.
+     * Role punya banyak user (one-to-many)
      */
-    public function users(): HasMany
+    public function users()
     {
         return $this->hasMany(User::class);
     }
 
     /**
-     * Cek apakah role ini memiliki permission key tertentu.
-     * Digunakan di logic proteksi route.
-     *
-     * Contoh: $role->hasPermission('view_laporan')
+     * Cek apakah role ini punya permission tertentu
      */
     public function hasPermission(string $key): bool
     {
-        return $this->permissions->contains('key', $key);
+        return $this->permissions()->where('key', $key)->exists();
     }
 }

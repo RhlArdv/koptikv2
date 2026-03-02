@@ -184,5 +184,31 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:edit_roles')
         ->name('roles.reset');
 
+        // -------------------------------------------------------
+    // ROLES
+    // -------------------------------------------------------
+    Route::get('/roles', [RoleController::class, 'index'])
+        ->middleware('permission:view_roles')
+        ->name('roles.index');
+
+    Route::post('/roles', [RoleController::class, 'store'])
+        ->middleware('permission:create_roles')
+        ->name('roles.store');
+
+    Route::get('/roles/{id}/edit', [RoleController::class, 'edit'])
+        ->middleware('permission:edit_roles')
+        ->name('roles.edit');
+
+    Route::put('/roles/{id}', [RoleController::class, 'update'])
+        ->middleware('permission:edit_roles')
+        ->name('roles.update');
+
+    Route::post('/roles/{id}/reset', [RoleController::class, 'reset'])
+        ->middleware('permission:edit_roles')
+        ->name('roles.reset');
+
+    Route::delete('/roles/{id}', [RoleController::class, 'destroy'])
+        ->middleware('permission:delete_roles')
+        ->name('roles.destroy');
 
 });

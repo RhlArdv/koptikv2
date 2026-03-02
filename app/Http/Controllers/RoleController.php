@@ -5,13 +5,147 @@ namespace App\Http\Controllers;
 use App\Models\Role;
 use App\Models\Permission;
 use Illuminate\Http\Request;
+use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class RoleController extends Controller
 {
     public function index()
     {
-        $roles = Role::withCount('permissions')->orderBy('display_name')->get();
+        $roles = Role::withCount(['permissions', 'users'])->orderBy('display_name')->get();
         return view('roles.index', compact('roles'));
+    }
+
+    /**
+     * Tambah role baru.
+     */
+    public function store(Request $request)
+    {
+        try {
+            $request->validate([
+                'display_name' => 'required|string|max:100',
+                'description'  => 'nullable|string|max:255',
+            ], [
+                'display_name.required' => 'Nama role wajib diisi.',
+            ]);
+
+            // Generate key dari display_name: "Head Bar 2" → "head_bar_2"
+            $key = Str::slug($request->display_name, '_');
+
+            if (Role::where('name', $key)->exists()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Role dengan nama tersebut sudah ada.',
+                ], 422);
+            }
+
+            $role = Role::create([
+                'name'         => $key,
+                'display_name' => $request->display_name,
+                'description'  => $request->description,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role "' . $role->display_name . '" berhasil ditambahkan.',
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menambahkan role.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Update nama/deskripsi role (bukan permission).
+     */
+    public function updateInfo(Request $request, $id)
+    {
+        try {
+            $role = Role::findOrFail($id);
+
+            // Proteksi role bawaan sistem
+            if (in_array($role->name, ['admin', 'kasir', 'head_bar'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Role bawaan sistem tidak bisa diubah namanya.',
+                ], 422);
+            }
+
+            $request->validate([
+                'display_name' => 'required|string|max:100',
+                'description'  => 'nullable|string|max:255',
+            ]);
+
+            $role->update([
+                'display_name' => $request->display_name,
+                'description'  => $request->description,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role berhasil diperbarui.',
+            ]);
+
+        } catch (ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => collect($e->errors())->flatten()->first(),
+            ], 422);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui role.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Hapus role — hanya role custom (bukan admin/kasir/head_bar).
+     */
+    public function destroy($id)
+    {
+        try {
+            $role = Role::findOrFail($id);
+
+            // Proteksi role bawaan
+            if (in_array($role->name, ['admin', 'kasir', 'head_bar'])) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Role bawaan sistem tidak bisa dihapus.',
+                ], 422);
+            }
+
+            // Cek apakah ada user yang masih pakai role ini
+            if ($role->users()->count() > 0) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Role tidak bisa dihapus karena masih dipakai ' . $role->users()->count() . ' user.',
+                ], 422);
+            }
+
+            $nama = $role->display_name;
+            $role->permissions()->detach(); // hapus pivot permission dulu
+            $role->delete();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Role "' . $nama . '" berhasil dihapus.',
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus role.',
+            ], 500);
+        }
     }
 
     /**
@@ -66,7 +200,6 @@ class RoleController extends Controller
             $role = Role::findOrFail($id);
 
             if ($role->name === 'admin') {
-                // Admin = semua permission
                 $role->permissions()->sync(Permission::pluck('id'));
                 return response()->json([
                     'success' => true,
@@ -95,24 +228,14 @@ class RoleController extends Controller
     {
         return match($roleName) {
             'kasir' => [
-                'view_dashboard',
-                'view_pesanan',
-                'konfirmasi_pembayaran',
-                'view_histori_pesanan',
+                'view_dashboard', 'view_pesanan',
+                'konfirmasi_pembayaran', 'view_histori_pesanan',
             ],
             'head_bar' => [
-                'view_dashboard',
-                'view_kategori',
-                'create_kategori',
-                'edit_kategori',
-                'view_menu',
-                'create_menu',
-                'edit_menu',
-                'view_stok',
-                'manage_stok',
-                'view_pesanan',
-                'proses_pesanan',
-                'view_histori_pesanan',
+                'view_dashboard', 'view_kategori', 'create_kategori',
+                'edit_kategori', 'view_menu', 'create_menu', 'edit_menu',
+                'view_stok', 'manage_stok', 'view_pesanan',
+                'proses_pesanan', 'view_histori_pesanan',
             ],
             default => [],
         };
