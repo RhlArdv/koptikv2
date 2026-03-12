@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y nodejs npm
 # Install PHP extensions
 RUN install-php-extensions pdo_mysql gd redis zip
 
-# Copy project files
+# Copy project
 COPY . .
 
 # Install PHP dependencies
@@ -23,11 +23,13 @@ RUN npm install
 # Build Vite assets
 RUN npm run build
 
-# Clear & rebuild Laravel config cache
+# Clear config first
 RUN php artisan config:clear
-RUN php artisan config:cache
 
-# Create storage symlink
+# Optimize Laravel (cache config, routes, views)
+RUN php artisan optimize
+
+# Storage symlink for uploaded files
 RUN php artisan storage:link
 
 # Fix permissions
