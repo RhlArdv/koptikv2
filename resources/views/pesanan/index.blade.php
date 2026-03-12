@@ -185,6 +185,19 @@
                             Detail
                         </button>
 
+                        {{-- Print Struk (hanya jika sudah lunas) --}}
+                        @if($pesanan->status_pembayaran === 'lunas')
+                            <button onclick="cetakStruk({{ $pesanan->id }})"
+                                    class="flex-1 px-3 py-2 text-xs font-medium text-white bg-purple-500
+                                           hover:bg-purple-600 rounded-lg transition-colors flex items-center justify-center gap-1">
+                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                </svg>
+                                Struk
+                            </button>
+                        @endif
+
                         {{-- Update Status (head bar & admin) --}}
                         @if(auth()->user()->hasPermission('proses_pesanan'))
                             @if($pesanan->status_pesanan === 'menunggu')
@@ -502,6 +515,44 @@
         </div>
     </div>
 
+    {{-- ============================================
+         MODAL STRUK PEMBAYARAN
+         ============================================ --}}
+    <div id="modal-struk"
+         class="fixed inset-0 z-50 hidden items-center justify-center bg-black/40 p-4"
+         onclick="if(event.target===this) tutupModal('modal-struk')">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-sm">
+            {{-- Header Modal --}}
+            <div id="struk-modal-header" class="px-5 py-4 border-b border-gray-100 flex items-center justify-between">
+                <h3 class="font-semibold text-gray-900">Struk Pembayaran</h3>
+                <button onclick="tutupModal('modal-struk')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            {{-- Isi Struk --}}
+            <div id="struk-content" class="px-5 py-4">
+                <!-- Konten struk akan diisi via JavaScript -->
+            </div>
+
+            {{-- Footer Modal --}}
+            <div id="struk-modal-footer" class="px-5 pb-5 flex gap-3">
+                <button onclick="tutupModal('modal-struk')"
+                        class="flex-1 px-4 py-2.5 text-sm font-medium text-gray-700 bg-gray-100
+                               hover:bg-gray-200 rounded-lg transition-colors">
+                    Tutup
+                </button>
+                <button onclick="window.print()"
+                        class="flex-1 px-4 py-2.5 text-sm font-medium text-white bg-amber-500
+                               hover:bg-amber-600 rounded-lg transition-colors">
+                    Print Struk
+                </button>
+            </div>
+        </div>
+    </div>
+
 @endsection
 
 @push('scripts')
@@ -511,6 +562,7 @@
     let totalTagihan   = 0;
     let metodeDipilih  = null;
     let pesananIdHapus = null;
+    let shouldReload   = false; // Flag untuk reload setelah tutup struk
 
     // ============================================
     // LIHAT DETAIL
@@ -721,6 +773,11 @@
         })
         .then(res => res.json())
         .then(data => {
+            // DEBUG: Log response dari server
+            console.log('Response dari server:', data);
+            console.log('print_struk:', data.print_struk);
+            console.log('struk exists:', !!data.struk);
+
             if (data.success) {
                 tutupModal('modal-bayar');
 
@@ -731,7 +788,17 @@
                     tampilToast('success', data.message);
                 }
 
-                setTimeout(() => location.reload(), 1500);
+                // Tampilkan struk jika ada data struk
+                if (data.print_struk && data.struk) {
+                    console.log('Menampilkan struk...');
+                    tampilkanStruk(data.struk);
+                    // Set flag untuk reload setelah modal struk ditutup
+                    shouldReload = true;
+                } else {
+                    console.log('Struk tidak ditemukan, reload langsung');
+                    // Jika tidak ada struk, reload langsung
+                    setTimeout(() => location.reload(), 1000);
+                }
             } else {
                 errorEl.textContent = data.message;
                 errorEl.classList.remove('hidden');
@@ -745,6 +812,105 @@
             btn.textContent = 'Konfirmasi';
             btn.disabled    = false;
         });
+    }
+
+    // ============================================
+    // TAMPILKAN STRUK
+    // ============================================
+    function tampilkanStruk(struk) {
+        const strukContent = document.getElementById('struk-content');
+
+        // Generate HTML struk
+        const itemsHtml = struk.items.map(item => `
+            <div class="flex justify-between text-xs border-b border-dashed border-gray-200 pb-1 mb-1">
+                <div class="flex-1">
+                    <p class="font-medium text-gray-800">${item.qty}× ${item.nama}</p>
+                </div>
+                <div class="text-right">
+                    <p class="text-gray-600">${item.subtotal}</p>
+                </div>
+            </div>
+        `).join('');
+
+        const pembayaranInfo = struk.pembayaran.metode === 'cash'
+            ? `
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">Metode</span>
+                    <span class="font-medium text-gray-800 uppercase">CASH</span>
+                </div>
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">Bayar</span>
+                    <span class="font-medium text-gray-800">${struk.pembayaran.nominal_bayar}</span>
+                </div>
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">Kembalian</span>
+                    <span class="font-medium text-gray-800">${struk.pembayaran.kembalian}</span>
+                </div>
+              `
+            : `
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">Metode</span>
+                    <span class="font-medium text-gray-800 uppercase">QRIS</span>
+                </div>
+              `;
+
+        strukContent.innerHTML = `
+            <div class="text-center border-b-2 border-dashed border-gray-300 pb-3 mb-3">
+                <h2 class="text-lg font-bold text-gray-900">${struk.toko.nama}</h2>
+                <p class="text-xs text-gray-500">${struk.toko.alamat}</p>
+                <p class="text-xs text-gray-500">${struk.toko.telepon}</p>
+            </div>
+
+            <div class="border-b-2 border-dashed border-gray-300 pb-3 mb-3">
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">No. Pesanan</span>
+                    <span class="font-medium text-gray-800">${struk.pesanan.kode}</span>
+                </div>
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">Tanggal</span>
+                    <span class="font-medium text-gray-800">${struk.pesanan.tanggal}</span>
+                </div>
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">Pelanggan</span>
+                    <span class="font-medium text-gray-800">${struk.pesanan.nama_pelanggan}</span>
+                </div>
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">Meja</span>
+                    <span class="font-medium text-gray-800">${struk.pesanan.nomor_meja}</span>
+                </div>
+            </div>
+
+            <div class="border-b-2 border-dashed border-gray-300 pb-3 mb-3">
+                <p class="text-xs font-semibold text-gray-500 mb-2">ITEM PESANAN</p>
+                ${itemsHtml}
+            </div>
+
+            <div class="border-b-2 border-dashed border-gray-300 pb-3 mb-3">
+                <div class="flex justify-between text-sm py-1">
+                    <span class="font-bold text-gray-800">TOTAL</span>
+                    <span class="font-bold text-gray-900">${struk.pembayaran.total}</span>
+                </div>
+            </div>
+
+            <div>
+                <p class="text-xs font-semibold text-gray-500 mb-2">PEMBAYARAN</p>
+                ${pembayaranInfo}
+                <div class="flex justify-between text-xs py-0.5 mt-2">
+                    <span class="text-gray-600">Kasir</span>
+                    <span class="font-medium text-gray-800">${struk.pembayaran.kasir}</span>
+                </div>
+                <div class="flex justify-between text-xs py-0.5">
+                    <span class="text-gray-600">Waktu Bayar</span>
+                    <span class="font-medium text-gray-800">${struk.pembayaran.waktu_bayar}</span>
+                </div>
+            </div>
+
+            <div class="text-center mt-4 pt-3 border-t border-gray-200">
+                <p class="text-xs text-gray-400">Terima kasih atas kunjungan Anda!</p>
+            </div>
+        `;
+
+        bukaModal('modal-struk');
     }
 
     // ============================================
@@ -791,6 +957,12 @@
     function tutupModal(id) {
         document.getElementById(id).classList.add('hidden');
         document.getElementById(id).classList.remove('flex');
+
+        // Jika yang ditutup adalah modal struk dan flag reload aktif
+        if (id === 'modal-struk' && shouldReload) {
+            shouldReload = false;
+            setTimeout(() => location.reload(), 300);
+        }
     }
 
     function tampilToast(tipe, pesan) {
@@ -805,4 +977,74 @@
         setTimeout(() => toast.remove(), 4000);
     }
 </script>
+@endpush
+
+@push('styles')
+<style>
+    /* ============================================
+       PRINT STRUK - @media print
+       ============================================ */
+    @media print {
+        /* Sembunyikan semua elemen kecuali modal struk */
+        body * {
+            visibility: hidden;
+        }
+
+        /* Tampilkan hanya modal struk */
+        #modal-struk,
+        #modal-struk * {
+            visibility: visible;
+        }
+
+        /* Posisikan struk di kiri atas */
+        #modal-struk {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: white;
+            display: flex !important;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 0;
+        }
+
+        /* Sembunyikan background overlay dan tombol */
+        #modal-struk > div {
+            box-shadow: none;
+            border: none;
+        }
+
+        /* Sembunyikan header dan footer modal (gunakan ID yang lebih spesifik) */
+        #struk-modal-header,
+        #struk-modal-footer {
+            display: none !important;
+        }
+
+        /* Styling khusus untuk struk saat print */
+        #struk-content {
+            padding: 10px !important;
+            width: 80mm !important; /* Lebar standar struk thermal */
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+
+        /* Pastikan text tetap hitam */
+        #struk-content * {
+            color: black !important;
+        }
+
+        /* Border tetap terlihat */
+        #struk-content .border-b,
+        #struk-content .border-t {
+            border-color: black !important;
+        }
+
+        /* Hapus background colors */
+        #struk-content div {
+            background: white !important;
+        }
+    }
+</style>
 @endpush

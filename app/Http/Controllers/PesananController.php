@@ -172,13 +172,49 @@ class PesananController extends Controller
                 'status_pesanan'     => $pesanan->status_pesanan === 'selesai' ? 'selesai' : 'selesai',
             ]);
 
+            // Reload pesanan dengan relations untuk struk
+            $pesanan->load(['details.menu', 'kasir']);
+
             return response()->json([
                 'success'      => true,
                 'message'      => 'Pembayaran pesanan ' . $pesanan->kode_pesanan . ' berhasil dikonfirmasi.',
+                'print_struk'  => true,
                 'kembalian'    => $kembalian,
                 'kembalian_format' => $kembalian !== null
                     ? 'Rp ' . number_format($kembalian, 0, ',', '.')
                     : null,
+                'struk'        => [
+                    'toko'         => [
+                        'nama'    => config('app.name', 'Koptik'),
+                        'alamat'  => ' Jl. Bougenville No. 17, 
+Flamboyan, Kota Padang, Sumatera Barat.',
+                        'telepon' => 'kopitik.com',
+                    ],
+                    'pesanan'     => [
+                        'kode'           => $pesanan->kode_pesanan,
+                        'tanggal'        => $pesanan->created_at->format('d/m/Y H:i'),
+                        'nama_pelanggan' => $pesanan->nama_pelanggan,
+                        'nomor_meja'     => $pesanan->nomor_meja,
+                    ],
+                    'items'       => $pesanan->details->map(fn($d) => [
+                        'nama'     => $d->nama_menu_saat_pesan,
+                        'qty'      => $d->qty,
+                        'harga'    => $d->harga_format,
+                        'subtotal' => $d->subtotal_format,
+                    ]),
+                    'pembayaran'  => [
+                        'total'            => $pesanan->total_format,
+                        'metode'           => $request->metode_pembayaran,
+                        'nominal_bayar'    => $nominalBayar !== null
+                            ? 'Rp ' . number_format($nominalBayar, 0, ',', '.')
+                            : null,
+                        'kembalian'        => $kembalian !== null
+                            ? 'Rp ' . number_format($kembalian, 0, ',', '.')
+                            : null,
+                        'kasir'            => $pesanan->kasir?->name ?? '-',
+                        'waktu_bayar'      => $pesanan->waktu_bayar->format('d/m/Y H:i'),
+                    ],
+                ],
             ]);
 
         } catch (ValidationException $e) {
