@@ -22,6 +22,8 @@ RUN npm install
 # build vite assets
 RUN npm run build
 
+RUN php artisan storage:link
+
 # clear cache
 RUN php artisan config:clear
 RUN php artisan cache:clear
