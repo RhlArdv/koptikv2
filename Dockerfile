@@ -5,7 +5,7 @@ WORKDIR /app
 # Install composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Install Node.js + npm
+# Install node + npm
 RUN apt-get update && apt-get install -y nodejs npm
 
 # Install PHP extensions
@@ -17,23 +17,19 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-dev --optimize-autoloader --no-interaction
 
-# Install Node dependencies
+# Install node dependencies
 RUN npm install
 
-# Build Vite assets
+# Build Vite
 RUN npm run build
 
-# Clear config first
+# Clear config only (AMAN)
 RUN php artisan config:clear
 
-# Optimize Laravel (cache config, routes, views)
-RUN php artisan optimize
-
-# Storage symlink for uploaded files
+# Storage symlink
 RUN php artisan storage:link
 
 # Fix permissions
 RUN chmod -R 777 storage bootstrap/cache
 
-# Start Laravel server
 CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=8080"]
