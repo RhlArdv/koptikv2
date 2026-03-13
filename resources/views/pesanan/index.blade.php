@@ -1040,69 +1040,41 @@
 
 @push('styles')
 <style>
-    /* ============================================
-       PRINT STRUK - @media print
-       ============================================ */
     @media print {
-        /* Sembunyikan semua elemen kecuali modal struk */
+        /* 1. Sembunyikan semua */
         body * {
-            visibility: hidden;
+            visibility: hidden !important;
         }
 
-        /* Tampilkan hanya modal struk */
-        #modal-struk,
-        #modal-struk * {
-            visibility: visible;
+        /* 2. Tampilkan hanya konten struk */
+        #struk-content,
+        #struk-content * {
+            visibility: visible !important;
         }
 
-        /* Posisikan struk di kiri atas */
-        #modal-struk {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            background: white;
-            display: flex !important;
-            align-items: flex-start;
-            justify-content: center;
-            padding: 0;
-        }
-
-        /* Sembunyikan background overlay dan tombol */
-        #modal-struk > div {
-            box-shadow: none;
-            border: none;
-        }
-
-        /* Sembunyikan header dan footer modal (gunakan ID yang lebih spesifik) */
-        #struk-modal-header,
-        #struk-modal-footer {
-            display: none !important;
-        }
-
-        /* Styling khusus untuk struk saat print */
+        /* 3. Posisikan struk di pojok kiri atas */
         #struk-content {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 80mm !important;
             padding: 10px !important;
-            width: 80mm !important; /* Lebar standar struk thermal */
-            font-family: 'Courier New', monospace;
-            font-size: 12px;
+            margin: 0 !important;
+            font-family: 'Courier New', monospace !important;
+            font-size: 11px !important;
+            background: white !important;
         }
 
-        /* Pastikan text tetap hitam */
+        /* 4. Warna teks hitam semua */
         #struk-content * {
             color: black !important;
+            background: transparent !important;
         }
 
-        /* Border tetap terlihat */
-        #struk-content .border-b,
-        #struk-content .border-t {
-            border-color: black !important;
-        }
-
-        /* Hapus background colors */
-        #struk-content div {
-            background: white !important;
+        /* 5. Sembunyikan header & footer browser bawaan */
+        @page {
+            margin: 0;
+            size: 80mm auto;
         }
     }
 </style>
