@@ -127,6 +127,10 @@ Route::middleware('auth')->group(function () {
         ->middleware('permission:view_pesanan')
         ->name('pesanan.index');
 
+    Route::get('/pesanan/{id}/struk', [PesananController::class, 'struk'])
+    ->middleware('permission:view_pesanan')
+    ->name('pesanan.struk');
+
     Route::get('/pesanan/{id}', [PesananController::class, 'show'])
         ->middleware('permission:view_pesanan')
         ->name('pesanan.show');
