@@ -122,7 +122,7 @@ window.modalInc = function(id) {
     setCardQty(id, item.qty); syncFloat();
 }
 
-window.modalInc = function(id) {
+window.modalDec = function(id) {
     const idx = cart.findIndex(i => i.menu_id === id);
     if (idx < 0) return;
     cart[idx].qty--;
