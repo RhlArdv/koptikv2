@@ -623,6 +623,28 @@
         .catch(() => tampilToast('error', 'Gagal memuat detail pesanan.'));
     }
 
+     // ============================================
+    // CETAK STRUK
+    // ============================================
+
+    window.cetakStruk = function(id) {
+    fetch(`/pesanan/${id}`, {
+        headers: {
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrfToken
+        }
+    })
+    .then(res => res.json())
+    .then(({ data }) => {
+        if (data) {
+            tampilkanStruk(data.struk);
+        } else {
+            tampilToast('error', 'Data struk tidak ditemukan.');
+        }
+    })
+    .catch(() => tampilToast('error', 'Gagal memuat struk.'));
+}
+
     // ============================================
     // UPDATE STATUS PESANAN
     // ============================================
