@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function save() { localStorage.setItem(CART_KEY, JSON.stringify(cart)); }
 
 /* ── Cart actions ── */
-function addToCart(id, nama, harga, stok) {
+window.addToCart = function(id, nama, harga, stok) {
     const ex = cart.find(i => i.menu_id === id);
     if (ex) { if (ex.qty < stok) ex.qty++; }
     else cart.push({ menu_id: id, nama, harga, qty: 1, stok });
@@ -35,13 +35,13 @@ function addToCart(id, nama, harga, stok) {
     syncFloat();
 }
 
-function incCart(id, stok) {
+window.incCart = function(id, stok) {
     const item = cart.find(i => i.menu_id === id);
     if (!item || item.qty >= stok) return;
     item.qty++; save(); setCardQty(id, item.qty); syncFloat();
 }
 
-function decCart(id) {
+window.decCart = function(id) {
     const idx = cart.findIndex(i => i.menu_id === id);
     if (idx < 0) return;
     cart[idx].qty--;
@@ -84,7 +84,7 @@ function syncFloat() {
 }
 
 /* ── Modal cart ── */
-function openCart() {
+window.openCart = function() {
     g('m-nama').textContent = val('input-nama') || '(belum diisi)';
     g('m-meja').textContent = val('input-meja') || '(belum diisi)';
     const cat = val('input-catatan'), cEl = g('catatan-chip');
@@ -94,7 +94,7 @@ function openCart() {
     g('modal-cart').classList.add('show');
 }
 
-function closeCart() { g('modal-cart').classList.remove('show'); }
+window.closeCart = function() { g('modal-cart').classList.remove('show'); }
 
 function renderCart() {
     g('cart-list').innerHTML = cart.map(item => `
@@ -113,7 +113,7 @@ function renderCart() {
     `).join('');
 }
 
-function modalInc(id) {
+window.modalInc = function(id) {
     const item = cart.find(i => i.menu_id === id);
     if (!item || item.qty >= item.stok) return;
     item.qty++; save();
@@ -122,7 +122,7 @@ function modalInc(id) {
     setCardQty(id, item.qty); syncFloat();
 }
 
-function modalDec(id) {
+window.modalInc = function(id) {
     const idx = cart.findIndex(i => i.menu_id === id);
     if (idx < 0) return;
     cart[idx].qty--;
@@ -140,7 +140,7 @@ function modalDec(id) {
 }
 
 /* ── Submit ── */
-function submitOrder() {
+window.submitOrder = function() {
     const nama = val('input-nama'), meja = val('input-meja');
     const catatan = val('input-catatan');
     const errEl = g('err-submit'), btn = g('btn-pesan');
@@ -174,7 +174,7 @@ function submitOrder() {
 }
 
 /* ── Reset ── */
-function resetOrder() {
+window.resetOrder = function() {
     cart = [];
     localStorage.removeItem(CART_KEY);
     document.querySelectorAll('[id^="stepper-"]').forEach(s => hideStepper(s.id.replace('stepper-', '')));
@@ -185,7 +185,7 @@ function resetOrder() {
 }
 
 /* ── Filter kategori ── */
-function filterKat(id) {
+window.filterKat = function(id) {
     document.querySelectorAll('.cat-tab').forEach(t => t.classList.remove('active'));
     g('tab-' + id)?.classList.add('active');
     document.querySelectorAll('.m-card').forEach(c => {
