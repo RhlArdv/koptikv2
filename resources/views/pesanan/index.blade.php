@@ -627,7 +627,7 @@
     // CETAK STRUK
     // ============================================
 
-    window.cetakStruk = function(id) {
+    function cetakStruk(id) {
     fetch(`/pesanan/${id}`, {
         headers: {
             'Accept': 'application/json',
@@ -635,11 +635,48 @@
         }
     })
     .then(res => res.json())
-    .then(({ data }) => {
-        if (data) {
-            tampilkanStruk(data.struk);
+    .then(res => {
+        if (res.success) {
+
+            const data = res.data;
+
+            // bentuk ulang data agar cocok dengan tampilkanStruk()
+            const struk = {
+                toko: {
+                    nama: 'Kopi Titik',
+                    alamat: 'Jl. Bougenville No. 17, Flamboyan, Padang',
+                    telepon: 'kopitik.com'
+                },
+                pesanan: {
+                    kode: data.kode_pesanan,
+                    tanggal: data.created_at,
+                    nama_pelanggan: data.nama_pelanggan,
+                    nomor_meja: data.nomor_meja
+                },
+                items: data.details.map(i => ({
+                    nama: i.nama,
+                    qty: i.qty,
+                    harga: i.harga,
+                    subtotal: i.subtotal
+                })),
+                pembayaran: {
+                    total: data.total_format,
+                    metode: data.metode_pembayaran,
+                    nominal_bayar: data.nominal_bayar
+                        ? 'Rp ' + Number(data.nominal_bayar).toLocaleString('id-ID')
+                        : null,
+                    kembalian: data.kembalian
+                        ? 'Rp ' + Number(data.kembalian).toLocaleString('id-ID')
+                        : null,
+                    kasir: data.kasir_nama,
+                    waktu_bayar: data.waktu_bayar
+                }
+            };
+
+            tampilkanStruk(struk);
+
         } else {
-            tampilToast('error', 'Data struk tidak ditemukan.');
+            tampilToast('error', 'Struk tidak ditemukan.');
         }
     })
     .catch(() => tampilToast('error', 'Gagal memuat struk.'));
