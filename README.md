@@ -208,8 +208,8 @@ Project ini dilisensikan under the MIT License - lihat file [LICENSE](LICENSE) u
 ## 👨‍💻 Author
 
 **Nama Anda**
-- Website: [https://yourwebsite.com](https://yourwebsite.com)
-- GitHub: [@username](https://github.com/username)
+- Email: [rhlardv@gmail.com](rhlardv@gmail.com)
+- GitHub: [@rhlardv](https://github.com/rhlardv)
 
 ## 🙏 Acknowledgments
 
