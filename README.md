@@ -1,59 +1,223 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Koptik - Sistem POS Kedai Kopi
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+![Laravel](https://img.shields.io/badge/Laravel-12.x-FF2D20?style=flat&logo=laravel)
+![PHP](https://img.shields.io/badge/PHP-8.2%2B-777BB4?style=flat&logo=php)
+![License](https://img.shields.io/badge/License-MIT-blue.svg)
 
-## About Laravel
+Aplikasi Point of Sale (POS) modern untuk kedai kopi dengan sistem pemesanan berbasis QR Code. Aplikasi ini memungkinkan pelanggan melakukan pemesanan mandiri melalui scan QR code di meja, serta menyediakan dashboard admin lengkap untuk manajemen pesanan, stok, dan laporan.
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+## 🌟 Fitur Utama
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Untuk Pelanggan
+- **Pemesanan QR Code** - Scan QR code di meja untuk memesan langsung
+- **Menu Interaktif** - Browse menu dengan kategori yang mudah dinavigasi
+- **Keranjang Real-time** - Kelola jumlah item dengan mudah
+- **Cek Stok Otomatis** - Item habis otomatis tidak dapat dipesan
+- **Pemesanan Mudah** - Cukup masukkan nama dan nomor meja
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+### Untuk Admin/Kasir
+- **Dashboard Real-time**
+  - Total pesanan hari ini
+  - Pesanan yang menunggu pembayaran
+  - Omzet harian
+  - Alert stok menipis
+- **Manajemen Pesanan**
+  - Lihat pesanan masuk
+  - Update status pesanan (Menunggu → Diproses → Selesai)
+  - Konfirmasi pembayaran dengan hitung kembalian
+  - Riwayat pesanan
+- **Manajemen Menu**
+  - CRUD item menu
+  - Kategorisasi menu
+  - Manajemen harga
+  - Manajemen stok dengan notifikasi otomatis
+- **Manajemen User**
+  - Sistem role-based permissions
+  - Multi-user dengan hak akses berbeda
+- **Laporan Komprehensif**
+  - Export laporan ke Excel
+  - Export laporan ke PDF
+  - Analitik penjualan
 
-## Learning Laravel
+## 🛠️ Tech Stack
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework. You can also check out [Laravel Learn](https://laravel.com/learn), where you will be guided through building a modern Laravel application.
+### Backend
+- **Framework**: Laravel 12.x
+- **PHP**: ^8.2
+- **Database**: SQLite (MySQL compatible)
+- **Authentication**: Laravel Breeze
+- **Authorization**: Custom Role-Based Access Control
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Frontend
+- **Build Tool**: Vite
+- **CSS Framework**: Tailwind CSS
+- **JavaScript**: Alpine.js
+- **Icons**: SVG Icons
 
-## Laravel Sponsors
+### Libraries
+- `barryvdh/laravel-dompdf` - PDF Generation
+- `maatwebsite/excel` - Excel Export
+- `yajra/laravel-datatables-oracle` - DataTables
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+## 📋 Prerequisites
 
-### Premium Partners
+Sebelum menginstall aplikasi ini, pastikan sudah terinstall:
 
-- **[Vehikl](https://vehikl.com)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Redberry](https://redberry.international/laravel-development)**
-- **[Active Logic](https://activelogic.com)**
+- PHP >= 8.2
+- Composer
+- Node.js & NPM
+- SQLite (atau MySQL/PostgreSQL)
 
-## Contributing
+## 🚀 Instalasi
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+1. **Clone repository**
+```bash
+git clone https://github.com/username/koptikv2.git
+cd koptikv2
+```
 
-## Code of Conduct
+2. **Install dependencies**
+```bash
+composer install
+npm install
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+3. **Setup environment**
+```bash
+cp .env.example .env
+php artisan key:generate
+```
 
-## Security Vulnerabilities
+4. **Setup database**
+```bash
+# Untuk SQLite
+touch database/database.sqlite
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+# Atau konfigurasi MySQL di .env
+# DB_CONNECTION=mysql
+# DB_DATABASE=koptik
+# DB_USERNAME=root
+# DB_PASSWORD=
+```
 
-## License
+5. **Run migrations & seeder**
+```bash
+php artisan migrate:fresh --seed
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+6. **Build assets**
+```bash
+npm run build
+```
+
+7. **Start development server**
+```bash
+php artisan serve
+```
+
+Aplikasi akan berjalan di `http://localhost:8000`
+
+## 👤 Default Account
+
+Setelah menjalankan seeder, Anda dapat login dengan:
+
+**Admin:**
+- Email: `admin@example.com`
+- Password: `password`
+
+**Kasir:**
+- Email: `kasir@example.com`
+- Password: `password`
+
+## 📂 Struktur Project
+
+```
+koptikv2/
+├── app/
+│   ├── Http/
+│   │   └── Controllers/    # Semua controller aplikasi
+│   └── Models/             # Eloquent models
+├── database/
+│   ├── migrations/         # Database migrations
+│   └── seeders/           # Database seeders
+├── resources/
+│   └── views/             # Blade templates
+├── routes/
+│   └── web.php            # Web routes
+├── public/                # Public assets
+└── .env                   # Environment configuration
+```
+
+## 🎯 Penggunaan
+
+### Untuk Pelanggan
+1. Scan QR code yang tersedia di meja
+2. Pilih menu yang diinginkan
+3. Atur jumlah pesanan
+4. Klik "Pesan Sekarang"
+5. Masukkan nama dan nomor meja
+6. Tunggu pesanan diproses
+
+### Untuk Admin
+1. Login ke dashboard admin
+2. Monitor pesanan masuk di halaman utama
+3. Proses pesanan sesuai status
+4. Konfirmasi pembayaran
+5. Kelola menu dan stok
+6. Generate laporan penjualan
+
+## 🔧 Konfigurasi
+
+### Mengubah Database ke MySQL
+
+Edit file `.env`:
+```env
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=koptik
+DB_USERNAME=root
+DB_PASSWORD=your_password
+```
+
+### Mengubah URL Aplikasi
+
+Edit file `.env`:
+```env
+APP_URL=http://your-domain.com
+```
+
+## 📸 Screenshots
+
+*(Tambahkan screenshot aplikasi di sini)*
+
+## 🤝 Kontribusi
+
+Kontribusi sangat diterima! Silakan ikuti langkah berikut:
+
+1. Fork repository ini
+2. Buat branch fitur (`git checkout -b fitur/fitur-baru`)
+3. Commit perubahan (`git commit -m 'Tambah fitur baru'`)
+4. Push ke branch (`git push origin fitur/fitur-baru`)
+5. Buat Pull Request
+
+## 📄 Lisensi
+
+Project ini dilisensikan under the MIT License - lihat file [LICENSE](LICENSE) untuk details.
+
+## 👨‍💻 Author
+
+**Nama Anda**
+- Website: [https://yourwebsite.com](https://yourwebsite.com)
+- GitHub: [@username](https://github.com/username)
+
+## 🙏 Acknowledgments
+
+- [Laravel](https://laravel.com)
+- [Tailwind CSS](https://tailwindcss.com)
+- [Alpine.js](https://alpinejs.dev)
+- Semua kontributor lainnya
+
+---
+
+Dibuat dengan ❤️ untuk mendukung UMKM Indonesia
